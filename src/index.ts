@@ -1,1 +1,1 @@
-export default {}
+export { SayHi } from './mod.ts'

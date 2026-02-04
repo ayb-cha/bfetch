@@ -1,20 +1,20 @@
 {
   "name": "bfetch",
   "type": "module",
-  "version": "2.0.1",
+  "version": "0.0.1",
   "packageManager": "pnpm@10.20.0",
   "description": "Fetch API with sensible defaults",
   "license": "MIT",
   "repository": "ayb-cha/bfetch",
   "sideEffects": false,
-  "exports": "./dist/index.mjs",
-  "main": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
+  "exports": "./dist/index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "rolldown -c",
+    "build": "tsc --noEmit && rolldown -c",
     "dev": "vitest",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -30,6 +30,7 @@
     "eslint": "^9.39.2",
     "lint-staged": "^16.2.7",
     "rolldown": "1.0.0-rc.3",
+    "rolldown-plugin-dts": "^0.22.1",
     "simple-git-hooks": "^2.13.1",
     "typescript": "^5.9.3",
     "vitest": "^4.0.5"
