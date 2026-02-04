@@ -1,3 +1,8 @@
-build
 pnpm-lock.yaml
+.vscode
+.idea
 node_modules
+*.log
+.DS_Store
+coverage
+dist
