@@ -18,13 +18,18 @@
     "dev": "vitest",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
+    "prepare": "pnpm simple-git-hooks",
     "test": "pnpm lint && vitest run --coverage"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^7.2.0",
+    "@commitlint/cli": "^19.6.1",
+    "@commitlint/config-conventional": "^19.6.0",
     "@types/node": "^24.9.2",
     "@vitest/coverage-v8": "^4.0.5",
     "eslint": "^9.39.2",
+    "lint-staged": "^16.2.7",
+    "simple-git-hooks": "^2.13.1",
     "typescript": "^5.9.3",
     "vitest": "^4.0.5"
   }
