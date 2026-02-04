@@ -19,7 +19,7 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "prepare": "pnpm simple-git-hooks",
-    "test": "pnpm lint && vitest run --coverage"
+    "test": "vitest run --coverage"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^7.2.0",
@@ -28,6 +28,7 @@
     "@types/node": "^24.9.2",
     "@vitest/coverage-v8": "^4.0.5",
     "eslint": "^9.39.2",
+    "h3": "2.0.1-rc.11",
     "lint-staged": "^16.2.7",
     "rolldown": "1.0.0-rc.3",
     "rolldown-plugin-dts": "^0.22.1",
