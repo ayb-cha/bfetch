@@ -1,0 +1,31 @@
+{
+  "name": "bfetch",
+  "type": "module",
+  "version": "2.0.1",
+  "packageManager": "pnpm@10.20.0",
+  "description": "Fetch API with sensible defaults",
+  "license": "MIT",
+  "repository": "ayb-cha/bfetch",
+  "sideEffects": false,
+  "exports": "./dist/index.mjs",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "",
+    "dev": "vitest",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "test": "pnpm lint && vitest run --coverage"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^7.2.0",
+    "@types/node": "^24.9.2",
+    "@vitest/coverage-v8": "^4.0.5",
+    "eslint": "^9.39.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.5"
+  }
+}
