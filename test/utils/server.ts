@@ -7,5 +7,5 @@ export async function createServer(): Promise<ReturnType<typeof serve>> {
     .all('/post', event => ({ body: readBody(event) }))
     .all('/200', () => null)
 
-  return await serve(app, { port: 0, hostname: 'localhost' }).ready()
+  return serve(app, { port: 0, hostname: 'localhost' }).ready()
 }
