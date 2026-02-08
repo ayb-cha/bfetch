@@ -1,8 +1,17 @@
+import type { HTTPError } from './http-error.ts'
+
 export type Input = string | URL
 
 export interface Fetch {
-  <_T>(input: Input, options?: FetchOptions): void
+  <T = any>(input: Input, options?: FetchOptions): Promise<FetchResponse<T>>
   extend: (options: ExtendOptions) => Fetch
+}
+
+export interface FetchResponse<T> {
+  headers: Headers
+  data: T
+  status: number
+  statusText: string
 }
 
 export interface ExtendOptions {
@@ -20,11 +29,13 @@ export interface FetchOptions {
   hooks?: Hooks
 }
 
+// Only expose primitives for now, other pars will be evaluated later base on users needs
 export interface Hooks {
-  beforeRequest?: () => void
-  afterResponse?: () => void
-  onRequestError?: () => void
-  onResponseError?: () => void
+  beforeRequest?: (options: Omit<FetchOptions, 'hooks'>) => void
+  afterResponse?: (request: Request, response: Response, options: Readonly<FetchOptions>) => void
+  onRequestError?: (error: unknown, request: Request, options: Readonly<FetchOptions>) => void
+  onResponseError?: (error: HTTPError, response: Response, request: Request, options: Readonly<FetchOptions>) => void
+  onResponseParseError?: (error: unknown, response: Response, request: Request, options: Readonly<FetchOptions>) => void
 }
 
 export interface Context {
@@ -39,6 +50,7 @@ export interface Context {
     afterResponse: Hooks['afterResponse'][]
     onRequestError: Hooks['onRequestError'][]
     onResponseError: Hooks['onResponseError'][]
+    onResponseParseError: Hooks['onResponseParseError'][]
   }
 }
 

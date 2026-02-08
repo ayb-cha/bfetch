@@ -1,4 +1,5 @@
-import type { Context, ExtendOptions, Fetch, FetchOptions, Input } from './types.ts'
+import type { Context, ExtendOptions, Fetch, FetchOptions, FetchResponse, Input } from './types.ts'
+import { constructRequest } from './http.ts'
 import { mergeParams, mergeURL } from './merge.ts'
 
 function createContext(input: Input, options: FetchOptions, extendOption: ExtendOptions): Context {
@@ -42,15 +43,42 @@ function createContext(input: Input, options: FetchOptions, extendOption: Extend
       onResponseError: [extendOption.hooks?.onResponseError, options.hooks?.onResponseError],
       beforeRequest: [extendOption.hooks?.beforeRequest, options.hooks?.beforeRequest],
       afterResponse: [extendOption.hooks?.afterResponse, options.hooks?.afterResponse],
+      onResponseParseError: [extendOption.hooks?.onResponseParseError, options.hooks?.onResponseParseError],
     },
   }
 }
 
-export function createFetch(extendOptions: ExtendOptions): Fetch {
-  const $fetch = function (input: Input, options: FetchOptions = {}): void {
-    const context = createContext(input, options, extendOptions)
+async function createFetchResponse<T>(response: Response): Promise<FetchResponse<T>> {
+  const data = response.text() as T
 
-    console.warn(context)
+  const result = {
+    data,
+    status: response.status,
+    headers: response.headers,
+    statusText: response.statusText,
+  }
+
+  return result
+}
+
+export function createFetch(extendOptions: ExtendOptions): Fetch {
+  const $fetch = async function <T>(input: Input, options: FetchOptions = {}): Promise<FetchResponse<T>> {
+    // call the beforeRequest before creating the context, so changes on the options should take effect
+    extendOptions.hooks?.beforeRequest?.(options)
+    options.hooks?.beforeRequest?.(options)
+
+    const context = createContext(input, options, extendOptions)
+    const request = constructRequest(context)
+
+    try {
+      const inflight = await fetch(request)
+      return createFetchResponse(inflight)
+    }
+    catch (error) {
+      context.hooks.onRequestError[0]?.(error, request, options)
+      context.hooks.onRequestError[1]?.(error, request, options)
+      throw error
+    }
   }
 
   return Object.assign($fetch, { extend: createFetch })
