@@ -34,6 +34,7 @@ function createContext(input: Input, options: FetchOptions, extendOption: Extend
     query: mergeParams(extendOption.query ?? {}, options.query ?? {}),
     headers,
     data,
+    options,
     hooks: {
       onRequestError: [extendOption.hooks?.onRequestError, options.hooks?.onRequestError],
       onResponseError: [extendOption.hooks?.onResponseError, options.hooks?.onResponseError],

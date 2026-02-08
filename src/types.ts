@@ -33,6 +33,7 @@ export interface Context {
   headers: HeadersInit
   query: URLSearchParams
   data: FetchOptions['data']
+  options: FetchOptions
   hooks: {
     beforeRequest: Hooks['beforeRequest'][]
     afterResponse: Hooks['afterResponse'][]
