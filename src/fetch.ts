@@ -4,7 +4,7 @@ import { mergeParams, mergeURL } from './merge.ts'
 function createContext(input: Input, options: FetchOptions, extendOption: ExtendOptions): Context {
   let method = 'get'
   let data: Context['data']
-  const headers: HeadersInit = {
+  let headers: HeadersInit = {
     Accept: 'application/json, text/plain, */*',
   }
 
@@ -27,6 +27,8 @@ function createContext(input: Input, options: FetchOptions, extendOption: Extend
   else {
     // let the runtime manage the content-type header
   }
+
+  headers = { ...headers, ...(options.headers ?? {}) }
 
   return {
     method: method.toUpperCase(),
