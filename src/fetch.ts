@@ -1,7 +1,7 @@
 import type { Context, ExtendOptions, Fetch, FetchOptions, FetchResponse, Input, RequestHttpVerbs } from '@/types.ts'
 import { HTTPError } from '@/http-error.ts'
 import { constructRequest, detectResponseType } from '@/http.ts'
-import { mergeParams, mergeRetry, mergeURL } from '@/merge.ts'
+import { mergeParams, mergeRetry, mergeSignals, mergeURL } from '@/merge.ts'
 import { ParseError } from '@/parse-error.ts'
 import { ResponseType } from '@/types.ts'
 import { isIdempotentRequest } from '@/utils.ts'
@@ -43,6 +43,7 @@ function createContext(input: Input, options: FetchOptions, extendOption: Extend
     headers,
     data,
     options,
+    signal: mergeSignals(extendOption.signal, options.signal),
     hooks: {
       onRequestError: [extendOption.hooks?.onRequestError, options.hooks?.onRequestError],
       onResponseError: [extendOption.hooks?.onResponseError, options.hooks?.onResponseError],

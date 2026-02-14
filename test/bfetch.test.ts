@@ -168,7 +168,7 @@ describe('bfetch', () => {
   it('can be aborted', async () => {
     const controller = new AbortController()
     try {
-      const res = bfetch(serverUrl(listener, '/long'), { native: { signal: controller.signal } })
+      const res = bfetch(serverUrl(listener, '/long'), { signal: controller.signal })
       controller.abort()
       await res
     }

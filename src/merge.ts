@@ -78,3 +78,20 @@ export function mergeRetry(...params: Retry[]): Required<Retry> {
 
   return result
 }
+
+export function mergeSignals(...signals: (AbortSignal | undefined)[]): AbortSignal {
+  const controller = new AbortController()
+
+  signals.forEach((signal) => {
+    if (signal) {
+      if (signal.aborted) {
+        controller.abort()
+      }
+      else {
+        signal.addEventListener('abort', () => controller.abort())
+      }
+    }
+  })
+
+  return controller.signal
+}

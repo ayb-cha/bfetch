@@ -8,6 +8,7 @@ export function constructRequest(ctx: Context): Request {
   const result = new Request(ctx.url + (query ? `?${query}` : ''), {
     method: ctx.method,
     headers: ctx.headers,
+    signal: ctx.signal,
     body: ctx.data,
     ...ctx.options.native,
   })
