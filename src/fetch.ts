@@ -6,7 +6,7 @@ import { ParseError } from '@/parse-error.ts'
 import { ResponseType } from '@/types.ts'
 import { isIdempotentRequest } from '@/utils.ts'
 
-function createContext(input: Input, options: FetchOptions, extendOption: ExtendOptions): Context {
+function createContext(input: Input, options: FetchOptions, extendOption: ExtendOptions, timeoutSignal: AbortSignal): Context {
   const method: RequestHttpVerbs = options.method ?? 'get'
   let data: Context['data']
   let headers: HeadersInit = {
@@ -43,7 +43,8 @@ function createContext(input: Input, options: FetchOptions, extendOption: Extend
     headers,
     data,
     options,
-    signal: mergeSignals(extendOption.signal, options.signal),
+    timeout: options.timeout ?? extendOption.timeout,
+    signal: mergeSignals(extendOption.signal, options.signal, timeoutSignal),
     hooks: {
       onRequestError: [extendOption.hooks?.onRequestError, options.hooks?.onRequestError],
       onResponseError: [extendOption.hooks?.onResponseError, options.hooks?.onResponseError],
@@ -119,7 +120,14 @@ export function createFetch(extendOptions: ExtendOptions): Fetch {
       extendOptions.hooks?.beforeRequest?.(options)
       options.hooks?.beforeRequest?.(options)
 
-      context = createContext(input, options, extendOptions)
+      const timeoutController = new AbortController()
+      let timer: ReturnType<typeof setTimeout> | undefined
+      context = createContext(input, options, extendOptions, timeoutController.signal)
+      if (context.timeout) {
+        timer = setTimeout(() => {
+          timeoutController.abort()
+        }, context.timeout)
+      }
       maxRetries = context!.retry.times
       const request = constructRequest(context)
 
@@ -134,6 +142,9 @@ export function createFetch(extendOptions: ExtendOptions): Fetch {
       }
       catch (error) {
         await handleFetchError(inflight!, request, context, error, retryCount)
+      }
+      finally {
+        clearTimeout(timer)
       }
     }
 
