@@ -1,11 +1,11 @@
 {
-  "name": "bfetch",
+  "name": "bee",
   "type": "module",
   "version": "0.0.1",
   "packageManager": "pnpm@10.20.0",
   "description": "Fetch API with sensible defaults",
   "license": "MIT",
-  "repository": "ayb-cha/bfetch",
+  "repository": "ayb-cha/bee",
   "sideEffects": false,
   "exports": "./dist/index.js",
   "main": "./dist/index.js",
