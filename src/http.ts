@@ -16,7 +16,6 @@ export function constructRequest(ctx: Context): Request {
   return result
 }
 
-// To handle: 'arrayBuffer', 'blob', 'formData'
 export function detectResponseType(responseTypeHeader: string): ResponseType {
   responseTypeHeader = responseTypeHeader.split(';').shift() || ''
   if (JSON_RESPONSE.test(responseTypeHeader)) {
@@ -27,5 +26,5 @@ export function detectResponseType(responseTypeHeader: string): ResponseType {
     return ResponseType.text
   }
 
-  return ResponseType.text
+  return ResponseType.json
 }

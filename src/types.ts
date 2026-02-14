@@ -29,6 +29,7 @@ export interface FetchOptions {
   query?: Record<string, any>
   headers?: HeadersInit
   data?: string | FormData | URLSearchParams | object
+  responseType?: keyof typeof ResponseType
   hooks?: Hooks
   signal?: AbortSignal
   timeout?: number
@@ -59,6 +60,7 @@ export interface Context {
   query: URLSearchParams
   data: BodyInit | undefined
   options: FetchOptions
+  responseType?: ResponseType
   signal?: AbortSignal
   timeout?: number
   hooks: {
@@ -78,4 +80,5 @@ export type RequestHttpVerbs = 'get' | 'post' | 'put' | 'patch' | 'head' | 'dele
 export enum ResponseType {
   text,
   json,
+  formdata,
 }

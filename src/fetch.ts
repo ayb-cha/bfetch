@@ -40,6 +40,7 @@ function createContext(input: Input, options: FetchOptions, extendOption: Extend
     url: mergeURL(input, extendOption.baseUrl),
     query: mergeParams(extendOption.query ?? {}, options.query ?? {}),
     retry: mergeRetry(extendOption.retry ?? {}, options.retry ?? {}),
+    responseType: options.responseType ? ResponseType[options.responseType] : undefined,
     headers,
     data,
     options,
@@ -60,12 +61,15 @@ async function createFetchResponse<T>(response: Response, request: Request, ctx:
   ctx.hooks.afterResponse[0]?.(request, response, ctx.options)
   ctx.hooks.afterResponse[1]?.(request, response, ctx.options)
 
-  const contentType = detectResponseType(response.headers.get('content-type') ?? 'application/json')
+  const contentType = ctx.responseType ?? detectResponseType(response.headers.get('content-type') ?? 'application/json')
 
   let data
   try {
     if (contentType === ResponseType.json) {
       data = await response.json() as T
+    }
+    else if (contentType === ResponseType.formdata) {
+      data = await response.formData() as T
     }
     else {
       data = await response.text() as T

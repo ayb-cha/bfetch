@@ -147,6 +147,12 @@ describe('bfetch', () => {
     expect(data).toBe(body)
   })
 
+  it('handles form data response', async () => {
+    const { data } = await bfetch<FormData>(serverUrl(listener, '/form-data-response'), { responseType: 'formdata' })
+    expect(data).toBeInstanceOf(FormData)
+    expect(data.get('name')).toEqual('ayoub')
+  })
+
   it('handles bad response', async () => {
     try {
       await bfetch(serverUrl(listener, '/403'))
