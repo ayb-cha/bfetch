@@ -1,4 +1,4 @@
-import type { FetchOptions } from './types.ts'
+import type { FetchOptions } from '@/types.ts'
 
 export class ParseError extends Error {
   constructor(

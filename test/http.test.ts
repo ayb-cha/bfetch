@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { detectResponseType } from '../src/http.ts'
-import { ResponseType } from '../src/types.ts'
+import { detectResponseType } from '@/http.ts'
+import { ResponseType } from '@/types.ts'
 
 describe('http', () => {
   it('detects json response type', () => {

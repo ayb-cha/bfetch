@@ -1,9 +1,9 @@
-import type { Context, ExtendOptions, Fetch, FetchOptions, FetchResponse, Input } from './types.ts'
-import { HTTPError } from './http-error.ts'
-import { constructRequest, detectResponseType } from './http.ts'
-import { mergeParams, mergeURL } from './merge.ts'
-import { ParseError } from './parse-error.ts'
-import { ResponseType } from './types.ts'
+import type { Context, ExtendOptions, Fetch, FetchOptions, FetchResponse, Input } from '@/types.ts'
+import { HTTPError } from '@/http-error.ts'
+import { constructRequest, detectResponseType } from '@/http.ts'
+import { mergeParams, mergeURL } from '@/merge.ts'
+import { ParseError } from '@/parse-error.ts'
+import { ResponseType } from '@/types.ts'
 
 function createContext(input: Input, options: FetchOptions, extendOption: ExtendOptions): Context {
   let method = 'get'

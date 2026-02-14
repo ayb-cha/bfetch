@@ -1,4 +1,4 @@
-import type { HTTPError } from './http-error.ts'
+import type { HTTPError } from '@/http-error.ts'
 
 export type Input = string | URL
 
