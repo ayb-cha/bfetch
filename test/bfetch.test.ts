@@ -9,11 +9,11 @@ import {
   vi,
 } from 'vitest'
 import { HTTPError } from '@/http-error.ts'
-import { bfetch } from '@/index.ts'
+import { unfee } from '@/index.ts'
 import { ParseError } from '@/parse-error.ts'
 import { createServer, serverUrl } from '~/test/utils/server.ts'
 
-describe('bfetch', () => {
+describe('unfee', () => {
   let listener: Awaited<ReturnType<typeof createServer>>
 
   beforeAll(async () => {
@@ -31,7 +31,7 @@ describe('bfetch', () => {
 
     const spy = vi.spyOn(hooks, 'beforeRequest')
 
-    const api = bfetch.extend({
+    const api = unfee.extend({
       baseUrl: serverUrl(listener),
       hooks,
     })
@@ -46,7 +46,7 @@ describe('bfetch', () => {
 
     const spy = vi.spyOn(hooks, 'onRequestError')
 
-    const api = bfetch.extend({
+    const api = unfee.extend({
       baseUrl: 'http://localhost:55933', // hopefully this port is not used
       hooks,
     })
@@ -64,7 +64,7 @@ describe('bfetch', () => {
 
     const spy = vi.spyOn(hooks, 'afterResponse')
 
-    const api = bfetch.extend({
+    const api = unfee.extend({
       baseUrl: serverUrl(listener),
       hooks,
     })
@@ -82,7 +82,7 @@ describe('bfetch', () => {
 
     const spy = vi.spyOn(hooks, 'onResponseParseError')
 
-    const api = bfetch.extend({
+    const api = unfee.extend({
       baseUrl: serverUrl(listener),
       hooks,
     })
@@ -101,7 +101,7 @@ describe('bfetch', () => {
 
     const spy = vi.spyOn(hooks, 'onRequestRetry')
 
-    const api = bfetch.extend({
+    const api = unfee.extend({
       baseUrl: serverUrl(listener),
       hooks,
     })
@@ -117,57 +117,57 @@ describe('bfetch', () => {
 
   it('sends query params', async () => {
     const params = { name: 'ayoub', age: 23 }
-    const { data } = await bfetch(serverUrl(listener, '/params'), { query: params })
+    const { data } = await unfee(serverUrl(listener, '/params'), { query: params })
     expect(data).toMatchObject({ name: 'ayoub', age: '23' })
   })
 
   it('sends request body', async () => {
     const body = { name: 'ayoub', age: 23 }
-    const { data } = await bfetch(serverUrl(listener, '/post'), { data: body, method: 'post' })
+    const { data } = await unfee(serverUrl(listener, '/post'), { data: body, method: 'post' })
     expect(data).toMatchObject(body)
   })
 
   it('handles form-data body', async () => {
     const body = new FormData()
     body.set('name', 'ayoub')
-    const { data } = await bfetch(serverUrl(listener, '/post/form-data'), { data: body, method: 'post' })
+    const { data } = await unfee(serverUrl(listener, '/post/form-data'), { data: body, method: 'post' })
     expect(data).toMatchObject({ name: 'ayoub' })
   })
 
   it('handles form url encoded body', async () => {
     const body = new URLSearchParams()
     body.set('name', 'ayoub')
-    const { data } = await bfetch(serverUrl(listener, '/post/form-urlencoded'), { data: body, method: 'post' })
+    const { data } = await unfee(serverUrl(listener, '/post/form-urlencoded'), { data: body, method: 'post' })
     expect(data).toMatchObject({ name: 'ayoub' })
   })
 
   it('handles plain text body', async () => {
     const body = 'hello world'
-    const { data } = await bfetch(serverUrl(listener, '/post/plain-text'), { data: body, method: 'post' })
+    const { data } = await unfee(serverUrl(listener, '/post/plain-text'), { data: body, method: 'post' })
     expect(data).toBe(body)
   })
 
   it('handles form data response', async () => {
-    const { data } = await bfetch<FormData>(serverUrl(listener, '/form-data-response'), { responseType: 'formdata' })
+    const { data } = await unfee<FormData>(serverUrl(listener, '/form-data-response'), { responseType: 'formdata' })
     expect(data).toBeInstanceOf(FormData)
     expect(data.get('name')).toEqual('ayoub')
   })
 
   it('handles array buffer response', async () => {
-    const { data } = await bfetch<ArrayBuffer>(serverUrl(listener, '/array-buffer-response'), { responseType: 'arraybuffer' })
+    const { data } = await unfee<ArrayBuffer>(serverUrl(listener, '/array-buffer-response'), { responseType: 'arraybuffer' })
     expect(data).toBeInstanceOf(ArrayBuffer)
     expect(new Uint8Array(data)).toEqual(new Uint8Array([1, 2, 3]))
   })
 
   it('handles blob response', async () => {
-    const { data } = await bfetch<Blob>(serverUrl(listener, '/blob-response'), { responseType: 'blob' })
+    const { data } = await unfee<Blob>(serverUrl(listener, '/blob-response'), { responseType: 'blob' })
     expect(data).toBeInstanceOf(Blob)
     expect(await data.text()).toEqual('HI!')
   })
 
   it('handles bad response', async () => {
     try {
-      await bfetch(serverUrl(listener, '/403'))
+      await unfee(serverUrl(listener, '/403'))
     }
     catch (error) {
       expect(error).instanceOf(HTTPError)
@@ -176,7 +176,7 @@ describe('bfetch', () => {
 
   it('throws parser error', async () => {
     try {
-      await bfetch(serverUrl(listener, '/parse-error'))
+      await unfee(serverUrl(listener, '/parse-error'))
     }
     catch (error) {
       expect(error).instanceOf(ParseError)
@@ -186,7 +186,7 @@ describe('bfetch', () => {
   it('can be aborted', async () => {
     const controller = new AbortController()
     try {
-      const res = bfetch(serverUrl(listener, '/long'), { signal: controller.signal })
+      const res = unfee(serverUrl(listener, '/long'), { signal: controller.signal })
       controller.abort()
       await res
     }
@@ -198,7 +198,7 @@ describe('bfetch', () => {
 
   it('times out', async () => {
     try {
-      await bfetch(serverUrl(listener, '/long'), { timeout: 100 })
+      await unfee(serverUrl(listener, '/long'), { timeout: 100 })
     }
     catch (error) {
       expect(error).toBeInstanceOf(DOMException)
@@ -212,7 +212,7 @@ describe('bfetch', () => {
     const spy = vi.spyOn(hooks, 'onRequestRetry')
 
     try {
-      await bfetch(serverUrl(listener, '/500'), { hooks })
+      await unfee(serverUrl(listener, '/500'), { hooks })
     }
     catch {
     }
@@ -226,7 +226,7 @@ describe('bfetch', () => {
     const spy = vi.spyOn(hooks, 'onRequestRetry')
 
     try {
-      await bfetch(serverUrl(listener, '/500'), {
+      await unfee(serverUrl(listener, '/500'), {
         hooks,
         retry: {
           times: 5,

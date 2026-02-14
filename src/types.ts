@@ -76,7 +76,6 @@ export interface Context {
 
 export type RequestHttpVerbs = 'get' | 'post' | 'put' | 'patch' | 'head' | 'delete' | 'options' | 'trace'
 
-// Other types will be added later
 export enum ResponseType {
   text,
   json,
