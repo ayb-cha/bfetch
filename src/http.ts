@@ -1,4 +1,5 @@
 import type { Context } from '@/types.ts'
+import { JSON_RESPONSE, TEXT_TYPES } from '@/constants.ts'
 import { ResponseType } from '@/types.ts'
 
 export function constructRequest(ctx: Context): Request {
@@ -16,22 +17,14 @@ export function constructRequest(ctx: Context): Request {
 
 // To handle: 'arrayBuffer', 'blob', 'formData'
 export function detectResponseType(responseTypeHeader: string): ResponseType {
-  const JSON_RESPONSE = /^application\/(?:[\w!#$%&*.^`~-]*\+)?json(?:;.+)?$/i
   responseTypeHeader = responseTypeHeader.split(';').shift() || ''
   if (JSON_RESPONSE.test(responseTypeHeader)) {
     return ResponseType.json
   }
 
-  // const textTypes = new Set([
-  //   'image/svg',
-  //   'application/xml',
-  //   'application/xhtml',
-  //   'application/html',
-  // ])
-
-  // if (textTypes.has(responseTypeHeader) || responseTypeHeader.startsWith('text/')) {
-  //   return ResponseType.text
-  // }
+  if (TEXT_TYPES.has(responseTypeHeader) || responseTypeHeader.startsWith('text/')) {
+    return ResponseType.text
+  }
 
   return ResponseType.text
 }
