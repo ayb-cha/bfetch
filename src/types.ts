@@ -20,6 +20,7 @@ export interface ExtendOptions {
   query?: Record<string, any>
   hooks?: Hooks
   signal?: AbortSignal
+  timeout?: number
   retry?: Retry
 }
 
@@ -30,6 +31,7 @@ export interface FetchOptions {
   data?: string | FormData | URLSearchParams | object
   hooks?: Hooks
   signal?: AbortSignal
+  timeout?: number
   native?: Omit<RequestInit, 'method' | 'headers' | 'body' | 'signal'>
   retry?: Retry
 }
@@ -58,6 +60,7 @@ export interface Context {
   data: BodyInit | undefined
   options: FetchOptions
   signal?: AbortSignal
+  timeout?: number
   hooks: {
     beforeRequest: Hooks['beforeRequest'][]
     afterResponse: Hooks['afterResponse'][]
