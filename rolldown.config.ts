@@ -8,4 +8,9 @@ export default defineConfig({
     dir: 'dist',
     format: 'esm',
   },
+  resolve: {
+    alias: {
+      '@/': './src',
+    },
+  },
 })
