@@ -19,7 +19,9 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Enable pnpm
-        run: corepack enable
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
