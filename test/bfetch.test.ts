@@ -145,4 +145,17 @@ describe('bfetch', () => {
       expect(error).instanceOf(ParseError)
     }
   })
+
+  it('can be aborted', async () => {
+    const controller = new AbortController()
+    try {
+      const res = bfetch(serverUrl(listener, '/timeout'), { native: { signal: controller.signal } })
+      controller.abort()
+      await res
+    }
+    catch (error) {
+      expect(error).toBeInstanceOf(DOMException)
+      expect((error as DOMException).name).toBe('AbortError')
+    }
+  })
 })
