@@ -22,6 +22,11 @@ export async function createServer(): Promise<ReturnType<typeof serve>> {
         },
       })
     })
+    .all('/form-data-response', () => {
+      const formData = new FormData()
+      formData.set('name', 'ayoub')
+      return new Response(formData)
+    })
 
   return serve(app, { port: 0, hostname: '127.0.0.1' }).ready()
 }
