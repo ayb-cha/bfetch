@@ -1,4 +1,4 @@
-import type { Hooks } from '../src/index.ts'
+import type { Hooks } from '@/index.ts'
 
 import {
   afterAll,
@@ -8,9 +8,9 @@ import {
   it,
   vi,
 } from 'vitest'
-import { HTTPError } from '../src/http-error.ts'
-import { bfetch } from '../src/index.ts'
-import { ParseError } from '../src/parse-error.ts'
+import { HTTPError } from '@/http-error.ts'
+import { bfetch } from '@/index.ts'
+import { ParseError } from '@/parse-error.ts'
 import { createServer, serverUrl } from './utils/server.ts'
 
 describe('bfetch', () => {

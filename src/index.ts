@@ -3,4 +3,4 @@ import { createFetch } from '@/fetch.ts'
 
 export const bfetch: Fetch = createFetch({})
 
-export * from './types.ts'
+export * from '@/types.ts'

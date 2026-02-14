@@ -1,5 +1,5 @@
-import type { Context } from './types.ts'
-import { ResponseType } from './types.ts'
+import type { Context } from '@/types.ts'
+import { ResponseType } from '@/types.ts'
 
 export function constructRequest(ctx: Context): Request {
   const query = ctx.query.toString()

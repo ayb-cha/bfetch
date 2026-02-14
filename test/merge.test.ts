@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mergeParams, mergeURL } from '../src/merge.ts'
+import { mergeParams, mergeURL } from '@/merge.ts'
 
 describe('merge', () => {
   describe('path', () => {

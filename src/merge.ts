@@ -1,4 +1,4 @@
-import type { Input } from './types.ts'
+import type { Input } from '@/types.ts'
 
 export function mergeURL(path: Input, baseUrl?: string): string {
   if (path instanceof URL) {

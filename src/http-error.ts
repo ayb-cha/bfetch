@@ -1,4 +1,4 @@
-import type { FetchOptions } from './types.ts'
+import type { FetchOptions } from '@/types.ts'
 
 export class HTTPError extends Error {
   public readonly status: number
