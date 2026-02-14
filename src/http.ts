@@ -8,6 +8,7 @@ export function constructRequest(ctx: Context): Request {
     method: ctx.method,
     headers: ctx.headers,
     body: ctx.data,
+    ...ctx.options.native,
   })
 
   return result

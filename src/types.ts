@@ -27,6 +27,7 @@ export interface FetchOptions {
   headers?: HeadersInit
   data?: string | FormData | URLSearchParams | object
   hooks?: Hooks
+  native?: Omit<RequestInit, 'method' | 'headers' | 'body'>
 }
 
 // Only expose primitives for now, other pars will be evaluated later base on users needs
