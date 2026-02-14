@@ -3,7 +3,8 @@ import { ResponseType } from './types.ts'
 
 export function constructRequest(ctx: Context): Request {
   const query = ctx.query.toString()
-  const result = new Request(ctx.url + query, {
+
+  const result = new Request(ctx.url + (query ? `?${query}` : ''), {
     method: ctx.method,
     headers: ctx.headers,
     body: ctx.data,
@@ -20,17 +21,16 @@ export function detectResponseType(responseTypeHeader: string): ResponseType {
     return ResponseType.json
   }
 
-  const textTypes = new Set([
-    'image/svg',
-    'application/xml',
-    'application/xhtml',
-    'application/html',
-  ])
+  // const textTypes = new Set([
+  //   'image/svg',
+  //   'application/xml',
+  //   'application/xhtml',
+  //   'application/html',
+  // ])
 
-  if (textTypes.has(responseTypeHeader) || responseTypeHeader.startsWith('text/')) {
-    return ResponseType.text
-  }
+  // if (textTypes.has(responseTypeHeader) || responseTypeHeader.startsWith('text/')) {
+  //   return ResponseType.text
+  // }
 
-  // other response types ...
   return ResponseType.text
 }

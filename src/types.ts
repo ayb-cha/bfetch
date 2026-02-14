@@ -25,7 +25,7 @@ export interface FetchOptions {
   method?: RequestHttpVerbs
   query?: Record<string, any>
   headers?: HeadersInit
-  data?: string | FormData | URLSearchParams
+  data?: string | FormData | URLSearchParams | object
   hooks?: Hooks
 }
 
@@ -43,7 +43,7 @@ export interface Context {
   url: string
   headers: HeadersInit
   query: URLSearchParams
-  data: FetchOptions['data']
+  data: BodyInit | undefined
   options: FetchOptions
   hooks: {
     beforeRequest: Hooks['beforeRequest'][]

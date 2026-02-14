@@ -1,6 +1,9 @@
 import type { Context, ExtendOptions, Fetch, FetchOptions, FetchResponse, Input } from './types.ts'
-import { constructRequest } from './http.ts'
+import { HTTPError } from './http-error.ts'
+import { constructRequest, detectResponseType } from './http.ts'
 import { mergeParams, mergeURL } from './merge.ts'
+import { ParseError } from './parse-error.ts'
+import { ResponseType } from './types.ts'
 
 function createContext(input: Input, options: FetchOptions, extendOption: ExtendOptions): Context {
   let method = 'get'
@@ -17,6 +20,10 @@ function createContext(input: Input, options: FetchOptions, extendOption: Extend
     headers['Content-Type'] = 'application/x-www-form-urlencoded'
     data = options.data.toString()
   }
+  else if (options.data instanceof FormData) {
+    // let the runtime manage the content-type header
+    data = options.data
+  }
   else if (typeof options.data === 'string') {
     headers['Content-Type'] = 'text/plain;charset=UTF-8'
     data = options.data
@@ -26,7 +33,7 @@ function createContext(input: Input, options: FetchOptions, extendOption: Extend
     data = JSON.stringify(options.data)
   }
   else {
-    // let the runtime manage the content-type header
+    data = options.data
   }
 
   headers = { ...headers, ...(options.headers ?? {}) }
@@ -48,11 +55,24 @@ function createContext(input: Input, options: FetchOptions, extendOption: Extend
   }
 }
 
-async function createFetchResponse<T>(response: Response): Promise<FetchResponse<T>> {
-  const data = response.text() as T
+async function createFetchResponse<T>(response: Response, request: Request, ctx: Context): Promise<FetchResponse<T>> {
+  const contentType = detectResponseType(response.headers.get('content-type') ?? 'application/json')
+
+  let data
+  try {
+    if (contentType === ResponseType.json) {
+      data = await response.json() as T
+    }
+    else {
+      data = await response.text() as T
+    }
+  }
+  catch (error) {
+    throw new ParseError(response, request, ctx.options, error)
+  }
 
   const result = {
-    data,
+    data: data!,
     status: response.status,
     headers: response.headers,
     statusText: response.statusText,
@@ -63,20 +83,37 @@ async function createFetchResponse<T>(response: Response): Promise<FetchResponse
 
 export function createFetch(extendOptions: ExtendOptions): Fetch {
   const $fetch = async function <T>(input: Input, options: FetchOptions = {}): Promise<FetchResponse<T>> {
-    // call the beforeRequest before creating the context, so changes on the options should take effect
+    // call the beforeRequest before creating the context, so changes to the options take effect
     extendOptions.hooks?.beforeRequest?.(options)
     options.hooks?.beforeRequest?.(options)
 
     const context = createContext(input, options, extendOptions)
     const request = constructRequest(context)
 
+    let inflight: Response
     try {
-      const inflight = await fetch(request)
-      return createFetchResponse(inflight)
+      inflight = await fetch(request)
+      if (!inflight.ok) {
+        throw new HTTPError(inflight, request, context.options)
+      }
+
+      context.hooks.afterResponse[0]?.(request, inflight, options)
+      context.hooks.afterResponse[1]?.(request, inflight, options)
+      return await createFetchResponse(inflight, request, context)
     }
     catch (error) {
-      context.hooks.onRequestError[0]?.(error, request, options)
-      context.hooks.onRequestError[1]?.(error, request, options)
+      if (error instanceof ParseError) {
+        context.hooks.onResponseParseError[0]?.(error, inflight!, request, options)
+        context.hooks.onResponseParseError[1]?.(error, inflight!, request, options)
+      }
+      else if (error instanceof HTTPError) {
+        context.hooks.onResponseError[0]?.(error, inflight!, request, options)
+        context.hooks.onResponseError[1]?.(error, inflight!, request, options)
+      }
+      else {
+        context.hooks.onRequestError[0]?.(error, request, options)
+        context.hooks.onRequestError[1]?.(error, request, options)
+      }
       throw error
     }
   }
