@@ -153,6 +153,18 @@ describe('bfetch', () => {
     expect(data.get('name')).toEqual('ayoub')
   })
 
+  it('handles array buffer response', async () => {
+    const { data } = await bfetch<ArrayBuffer>(serverUrl(listener, '/array-buffer-response'), { responseType: 'arraybuffer' })
+    expect(data).toBeInstanceOf(ArrayBuffer)
+    expect(new Uint8Array(data)).toEqual(new Uint8Array([1, 2, 3]))
+  })
+
+  it('handles blob response', async () => {
+    const { data } = await bfetch<Blob>(serverUrl(listener, '/blob-response'), { responseType: 'blob' })
+    expect(data).toBeInstanceOf(Blob)
+    expect(await data.text()).toEqual('HI!')
+  })
+
   it('handles bad response', async () => {
     try {
       await bfetch(serverUrl(listener, '/403'))

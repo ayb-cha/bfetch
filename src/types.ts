@@ -81,4 +81,6 @@ export enum ResponseType {
   text,
   json,
   formdata,
+  arraybuffer,
+  blob,
 }
