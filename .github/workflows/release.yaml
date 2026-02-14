@@ -21,7 +21,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Install deps
-        run: pnpm install --frozen-lockfile --prod=false
+        run: pnpm install --frozen-lockfile
 
       - name: Initialize npm
         env:
