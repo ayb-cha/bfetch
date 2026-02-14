@@ -178,6 +178,16 @@ describe('bfetch', () => {
     }
   })
 
+  it('times out', async () => {
+    try {
+      await bfetch(serverUrl(listener, '/long'), { timeout: 100 })
+    }
+    catch (error) {
+      expect(error).toBeInstanceOf(DOMException)
+      expect((error as DOMException).name).toBe('AbortError')
+    }
+  })
+
   it('reties requests by default', async () => {
     const hooks: Hooks = { onRequestRetry() {} }
 
