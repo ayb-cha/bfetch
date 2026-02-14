@@ -18,7 +18,8 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "prepare": "pnpm simple-git-hooks",
-    "test": "vitest run --coverage"
+    "test": "vitest run --coverage",
+    "release": "release-it"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^7.2.0",
@@ -26,6 +27,7 @@
     "@commitlint/config-conventional": "^19.6.0",
     "@types/node": "^24.9.2",
     "@vitest/coverage-v8": "^4.0.5",
+    "changelogen": "^0.6.2",
     "eslint": "^9.39.2",
     "h3": "2.0.1-rc.11",
     "lint-staged": "^16.2.7",

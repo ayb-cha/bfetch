@@ -2,8 +2,18 @@
   "plugins": {
     "release-it-pnpm": {}
   },
+  "hooks": {
+    "before:init": ["pnpm run lint", "pnpm run test"],
+    "after:bump": "pnpm dlx changelogen"
+  },
   "git": {
     "commitMessage": "chore: release ${version}",
     "tagName": "v${version}"
+  },
+  "github": {
+    "release": true
+  },
+  "npm": {
+    "publish": true
   }
 }
