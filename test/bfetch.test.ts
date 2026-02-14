@@ -11,7 +11,7 @@ import {
 import { HTTPError } from '@/http-error.ts'
 import { bfetch } from '@/index.ts'
 import { ParseError } from '@/parse-error.ts'
-import { createServer, serverUrl } from './utils/server.ts'
+import { createServer, serverUrl } from '~/test/utils/server.ts'
 
 describe('bfetch', () => {
   let listener: Awaited<ReturnType<typeof createServer>>
