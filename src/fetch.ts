@@ -71,6 +71,12 @@ async function createFetchResponse<T>(response: Response, request: Request, ctx:
     else if (contentType === ResponseType.formdata) {
       data = await response.formData() as T
     }
+    else if (contentType === ResponseType.arraybuffer) {
+      data = await response.arrayBuffer() as T
+    }
+    else if (contentType === ResponseType.blob) {
+      data = await response.blob() as T
+    }
     else {
       data = await response.text() as T
     }
