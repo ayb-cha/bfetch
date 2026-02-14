@@ -1,19 +1,16 @@
-import type { Context, ExtendOptions, Fetch, FetchOptions, FetchResponse, Input } from '@/types.ts'
+import type { Context, ExtendOptions, Fetch, FetchOptions, FetchResponse, Input, RequestHttpVerbs } from '@/types.ts'
 import { HTTPError } from '@/http-error.ts'
 import { constructRequest, detectResponseType } from '@/http.ts'
-import { mergeParams, mergeURL } from '@/merge.ts'
+import { mergeParams, mergeRetry, mergeURL } from '@/merge.ts'
 import { ParseError } from '@/parse-error.ts'
 import { ResponseType } from '@/types.ts'
+import { isIdempotentRequest } from '@/utils.ts'
 
 function createContext(input: Input, options: FetchOptions, extendOption: ExtendOptions): Context {
-  let method = 'get'
+  const method: RequestHttpVerbs = options.method ?? 'get'
   let data: Context['data']
   let headers: HeadersInit = {
     Accept: 'application/json, text/plain, */*',
-  }
-
-  if (options.method) {
-    method = options.method
   }
 
   if (options.data instanceof URLSearchParams) {
@@ -39,9 +36,10 @@ function createContext(input: Input, options: FetchOptions, extendOption: Extend
   headers = { ...headers, ...(options.headers ?? {}) }
 
   return {
-    method: method.toUpperCase(),
+    method,
     url: mergeURL(input, extendOption.baseUrl),
     query: mergeParams(extendOption.query ?? {}, options.query ?? {}),
+    retry: mergeRetry(extendOption.retry ?? {}, options.retry ?? {}),
     headers,
     data,
     options,
@@ -51,11 +49,15 @@ function createContext(input: Input, options: FetchOptions, extendOption: Extend
       beforeRequest: [extendOption.hooks?.beforeRequest, options.hooks?.beforeRequest],
       afterResponse: [extendOption.hooks?.afterResponse, options.hooks?.afterResponse],
       onResponseParseError: [extendOption.hooks?.onResponseParseError, options.hooks?.onResponseParseError],
+      onRequestRetry: [extendOption.hooks?.onRequestRetry, options.hooks?.onRequestRetry],
     },
   }
 }
 
 async function createFetchResponse<T>(response: Response, request: Request, ctx: Context): Promise<FetchResponse<T>> {
+  ctx.hooks.afterResponse[0]?.(request, response, ctx.options)
+  ctx.hooks.afterResponse[1]?.(request, response, ctx.options)
+
   const contentType = detectResponseType(response.headers.get('content-type') ?? 'application/json')
 
   let data
@@ -81,41 +83,61 @@ async function createFetchResponse<T>(response: Response, request: Request, ctx:
   return result
 }
 
+async function handleFetchError(response: Response, request: Request, ctx: Context, error: unknown, retryCount: number): Promise<never | undefined> {
+  if (error instanceof ParseError) {
+    ctx.hooks.onResponseParseError[0]?.(error, response, request, ctx.options)
+    ctx.hooks.onResponseParseError[1]?.(error, response, request, ctx.options)
+  }
+  else if (error instanceof HTTPError) {
+    ctx.hooks.onResponseError[0]?.(error, response, request, ctx.options)
+    ctx.hooks.onResponseError[1]?.(error, response, request, ctx.options)
+    if (isIdempotentRequest(ctx.method) && ctx.retry.statusCode.has(response.status) && retryCount < ctx.retry.times) {
+      ctx.hooks.onRequestRetry[0]?.(retryCount, response, request, ctx.options)
+      ctx.hooks.onRequestRetry[1]?.(retryCount, response, request, ctx.options)
+      if (ctx.retry.delay > 0) {
+        await new Promise(resolve => setTimeout(resolve, ctx.retry.delay))
+      }
+
+      return
+    }
+  }
+  else {
+    ctx.hooks.onRequestError[0]?.(error, request, ctx.options)
+    ctx.hooks.onRequestError[1]?.(error, request, ctx.options)
+  }
+  throw error
+}
+
 export function createFetch(extendOptions: ExtendOptions): Fetch {
   const $fetch = async function <T>(input: Input, options: FetchOptions = {}): Promise<FetchResponse<T>> {
-    // call the beforeRequest before creating the context, so changes to the options take effect
-    extendOptions.hooks?.beforeRequest?.(options)
-    options.hooks?.beforeRequest?.(options)
+    let context: Context | null = null
+    let maxRetries = 0
 
-    const context = createContext(input, options, extendOptions)
-    const request = constructRequest(context)
+    for (let retryCount = 0; retryCount <= maxRetries; retryCount++) {
+      // call the beforeRequest before creating the context, so changes to the options take effect
+      extendOptions.hooks?.beforeRequest?.(options)
+      options.hooks?.beforeRequest?.(options)
 
-    let inflight: Response
-    try {
-      inflight = await fetch(request)
-      if (!inflight.ok) {
-        throw new HTTPError(inflight, request, context.options)
+      context = createContext(input, options, extendOptions)
+      maxRetries = context!.retry.times
+      const request = constructRequest(context)
+
+      let inflight: Response
+      try {
+        inflight = await fetch(request)
+        if (!inflight.ok) {
+          throw new HTTPError(inflight, request, context.options)
+        }
+
+        return await createFetchResponse(inflight, request, context)
       }
-
-      context.hooks.afterResponse[0]?.(request, inflight, options)
-      context.hooks.afterResponse[1]?.(request, inflight, options)
-      return await createFetchResponse(inflight, request, context)
+      catch (error) {
+        await handleFetchError(inflight!, request, context, error, retryCount)
+      }
     }
-    catch (error) {
-      if (error instanceof ParseError) {
-        context.hooks.onResponseParseError[0]?.(error, inflight!, request, options)
-        context.hooks.onResponseParseError[1]?.(error, inflight!, request, options)
-      }
-      else if (error instanceof HTTPError) {
-        context.hooks.onResponseError[0]?.(error, inflight!, request, options)
-        context.hooks.onResponseError[1]?.(error, inflight!, request, options)
-      }
-      else {
-        context.hooks.onRequestError[0]?.(error, request, options)
-        context.hooks.onRequestError[1]?.(error, request, options)
-      }
-      throw error
-    }
+
+    // Defensive: make ts happy, this line should never be reached
+    throw new Error('Failed to fetch after retries')
   }
 
   return Object.assign($fetch, { extend: createFetch })

@@ -47,7 +47,7 @@ describe('bfetch', () => {
     const spy = vi.spyOn(hooks, 'onRequestError')
 
     const api = bfetch.extend({
-      baseUrl: 'http://not-found:5533',
+      baseUrl: 'http://localhost:55933', // hopefully this port is not used
       hooks,
     })
 
@@ -96,6 +96,25 @@ describe('bfetch', () => {
     expect(spy).toHaveBeenCalledTimes(2)
   })
 
+  it('hooks: onRequestRetry', async () => {
+    const hooks: Hooks = { onRequestRetry() {} }
+
+    const spy = vi.spyOn(hooks, 'onRequestRetry')
+
+    const api = bfetch.extend({
+      baseUrl: serverUrl(listener),
+      hooks,
+    })
+
+    try {
+      await api('/500', { hooks })
+    }
+    catch {
+    }
+
+    expect(spy).toHaveBeenCalledTimes(2)
+  })
+
   it('sends query params', async () => {
     const params = { name: 'ayoub', age: 23 }
     const { data } = await bfetch(serverUrl(listener, '/params'), { query: params })
@@ -130,7 +149,7 @@ describe('bfetch', () => {
 
   it('handles bad response', async () => {
     try {
-      await bfetch(serverUrl(listener, '/response-error'))
+      await bfetch(serverUrl(listener, '/403'))
     }
     catch (error) {
       expect(error).instanceOf(HTTPError)
@@ -157,5 +176,39 @@ describe('bfetch', () => {
       expect(error).toBeInstanceOf(DOMException)
       expect((error as DOMException).name).toBe('AbortError')
     }
+  })
+
+  it('reties requests by default', async () => {
+    const hooks: Hooks = { onRequestRetry() {} }
+
+    const spy = vi.spyOn(hooks, 'onRequestRetry')
+
+    try {
+      await bfetch(serverUrl(listener, '/500'), { hooks })
+    }
+    catch {
+    }
+
+    expect(spy).toHaveBeenCalledOnce()
+  })
+
+  it('reties requests', async () => {
+    const hooks: Hooks = { onRequestRetry() {} }
+
+    const spy = vi.spyOn(hooks, 'onRequestRetry')
+
+    try {
+      await bfetch(serverUrl(listener, '/500'), {
+        hooks,
+        retry: {
+          times: 5,
+          statusCode: new Set([500]),
+        },
+      })
+    }
+    catch {
+    }
+
+    expect(spy).toHaveBeenCalledTimes(5)
   })
 })

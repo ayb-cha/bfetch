@@ -9,7 +9,8 @@ export async function createServer(): Promise<ReturnType<typeof serve>> {
     .post('/post/form-urlencoded', event => (readBody(event)))
     .post('/post/plain-text', event => event.req.text())
     .all('/200', () => null)
-    .all('/response-error', () => new HTTPError({ statusCode: 403, statusMessage: 'Forbidden' }))
+    .all('/500', () => new HTTPError({ statusCode: 500, statusMessage: 'Internal Server Error' }))
+    .all('/403', () => new HTTPError({ statusCode: 403, statusMessage: 'Forbidden' }))
     .all('/long', async () => {
       await new Promise(resolve => setTimeout(resolve, 1000))
       return null

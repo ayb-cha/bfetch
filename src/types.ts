@@ -19,6 +19,7 @@ export interface ExtendOptions {
   headers?: HeadersInit
   query?: Record<string, any>
   hooks?: Hooks
+  retry?: Retry
 }
 
 export interface FetchOptions {
@@ -28,6 +29,7 @@ export interface FetchOptions {
   data?: string | FormData | URLSearchParams | object
   hooks?: Hooks
   native?: Omit<RequestInit, 'method' | 'headers' | 'body'>
+  retry?: Retry
 }
 
 // Only expose primitives for now, other pars will be evaluated later base on users needs
@@ -37,10 +39,17 @@ export interface Hooks {
   onRequestError?: (error: unknown, request: Request, options: Readonly<FetchOptions>) => void
   onResponseError?: (error: HTTPError, response: Response, request: Request, options: Readonly<FetchOptions>) => void
   onResponseParseError?: (error: unknown, response: Response, request: Request, options: Readonly<FetchOptions>) => void
+  onRequestRetry?: (retryCount: number, response: Response, request: Request, options: Readonly<FetchOptions>) => void
+}
+
+export interface Retry {
+  times?: number
+  delay?: number
+  statusCode?: Set<number>
 }
 
 export interface Context {
-  method: string
+  method: RequestHttpVerbs
   url: string
   headers: HeadersInit
   query: URLSearchParams
@@ -52,7 +61,9 @@ export interface Context {
     onRequestError: Hooks['onRequestError'][]
     onResponseError: Hooks['onResponseError'][]
     onResponseParseError: Hooks['onResponseParseError'][]
+    onRequestRetry: Hooks['onRequestRetry'][]
   }
+  retry: Required<Retry>
 }
 
 export type RequestHttpVerbs = 'get' | 'post' | 'put' | 'patch' | 'head' | 'delete' | 'options' | 'trace'

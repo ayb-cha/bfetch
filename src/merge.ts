@@ -1,4 +1,5 @@
-import type { Input } from '@/types.ts'
+import type { Input, Retry } from '@/types.ts'
+import { RETRY_STATUS_CODES } from '@/constants.ts'
 
 export function mergeURL(path: Input, baseUrl?: string): string {
   if (path instanceof URL) {
@@ -52,6 +53,28 @@ export function mergeParams(...params: Record<string, any>[]): URLSearchParams {
       }
     }
   })
+
+  return result
+}
+
+export function mergeRetry(...params: Retry[]): Required<Retry> {
+  const result: Required<Retry> = {
+    times: 1,
+    delay: 0,
+    statusCode: RETRY_STATUS_CODES,
+  }
+
+  for (const param of params) {
+    if (param.times !== undefined) {
+      result.times = param.times
+    }
+    if (param.delay !== undefined) {
+      result.delay = param.delay
+    }
+    if (param.statusCode !== undefined) {
+      result.statusCode = param.statusCode
+    }
+  }
 
   return result
 }

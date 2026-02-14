@@ -15,7 +15,6 @@
   ],
   "scripts": {
     "build": "tsc --noEmit && rolldown -c",
-    "dev": "vitest",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "prepare": "pnpm simple-git-hooks",
