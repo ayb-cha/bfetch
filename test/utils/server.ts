@@ -10,8 +10,9 @@ export async function createServer(): Promise<ReturnType<typeof serve>> {
     .post('/post/plain-text', event => event.req.text())
     .all('/200', () => null)
     .all('/response-error', () => new HTTPError({ statusCode: 403, statusMessage: 'Forbidden' }))
-    .all('/timeout', async () => {
+    .all('/long', async () => {
       await new Promise(resolve => setTimeout(resolve, 1000))
+      return null
     })
     .all('/parse-error', () => {
       return new Response('{', {
