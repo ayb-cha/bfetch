@@ -1,5 +1,6 @@
 {
   "plugins": {
+    "release-it-pnpm": {}
   },
   "hooks": {
     "before:init": ["pnpm run lint", "pnpm run test"],
