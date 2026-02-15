@@ -4,15 +4,14 @@
   },
   "hooks": {
     "before:init": ["pnpm run lint", "pnpm run test"],
-    "before:publish": "pnpm run build",
-    "after:bump": "pnpm dlx changelogen --output"
+    "before:publish": "pnpm run build"
   },
   "git": {
     "commitMessage": "chore: release ${version}",
     "tagName": "v${version}"
   },
   "github": {
-    "release": false
+    "release": true
   },
   "npm": {
     "publish": true
