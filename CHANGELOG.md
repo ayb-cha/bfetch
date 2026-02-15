@@ -1,6 +1,10 @@
 # Changelog
 
 
+## v1.0.0...main
+
+[compare changes](https://github.com/ayb-cha/unfee/compare/v1.0.0...main)
+
 ## v0.1.2...main
 
 [compare changes](https://github.com/ayb-cha/unfee/compare/v0.1.2...main)
