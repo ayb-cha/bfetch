@@ -165,6 +165,24 @@ describe('unfee', () => {
     expect(await data.text()).toEqual('HI!')
   })
 
+  it('auto detects form data response', async () => {
+    const { data } = await unfee<FormData>(serverUrl(listener, '/form-data-response'))
+    expect(data).toBeInstanceOf(FormData)
+    expect(data.get('name')).toEqual('ayoub')
+  })
+
+  it('auto detects array buffer response', async () => {
+    const { data } = await unfee<ArrayBuffer>(serverUrl(listener, '/array-buffer-response'))
+    expect(data).toBeInstanceOf(ArrayBuffer)
+    expect(new Uint8Array(data)).toEqual(new Uint8Array([1, 2, 3]))
+  })
+
+  it('auto detects blob response', async () => {
+    const { data } = await unfee<Blob>(serverUrl(listener, '/blob-response'))
+    expect(data).toBeInstanceOf(Blob)
+    expect(await data.text()).toEqual('HI!')
+  })
+
   it('handles bad response', async () => {
     try {
       await unfee(serverUrl(listener, '/403'))
