@@ -51,10 +51,7 @@ describe('unfee', () => {
       hooks,
     })
 
-    try {
-      await api('/up', { hooks })
-    }
-    catch {}
+    await api('/up', { hooks })
 
     expect(spy).toHaveBeenCalledTimes(2)
   })
@@ -69,10 +66,7 @@ describe('unfee', () => {
       hooks,
     })
 
-    try {
-      await api('/up', { hooks })
-    }
-    catch {}
+    await api('/up', { hooks })
 
     expect(spy).toHaveBeenCalledTimes(2)
   })
@@ -87,11 +81,7 @@ describe('unfee', () => {
       hooks,
     })
 
-    try {
-      await api('/parse-error', { hooks })
-    }
-    catch {
-    }
+    await api('/parse-error', { hooks })
 
     expect(spy).toHaveBeenCalledTimes(2)
   })
@@ -106,122 +96,114 @@ describe('unfee', () => {
       hooks,
     })
 
-    try {
-      await api('/500', { hooks })
-    }
-    catch {
-    }
+    await api('/500', { hooks })
 
     expect(spy).toHaveBeenCalledTimes(2)
   })
 
   it('sends query params', async () => {
     const params = { name: 'ayoub', age: 23 }
-    const { data } = await unfee(serverUrl(listener, '/params'), { query: params })
+    const [error, data] = await unfee<typeof params>(serverUrl(listener, '/params'), { query: params })
+
+    expect(error).toBeNull()
     expect(data).toMatchObject({ name: 'ayoub', age: '23' })
   })
 
   it('sends request body', async () => {
     const body = { name: 'ayoub', age: 23 }
-    const { data } = await unfee(serverUrl(listener, '/post'), { data: body, method: 'post' })
+    const [error, data] = await unfee<typeof body>(serverUrl(listener, '/post'), { data: body, method: 'post' })
+    expect(error).toBeNull()
     expect(data).toMatchObject(body)
   })
 
   it('handles form-data body', async () => {
     const body = new FormData()
     body.set('name', 'ayoub')
-    const { data } = await unfee(serverUrl(listener, '/post/form-data'), { data: body, method: 'post' })
+    const [error, data] = await unfee(serverUrl(listener, '/post/form-data'), { data: body, method: 'post' })
+    expect(error).toBeNull()
     expect(data).toMatchObject({ name: 'ayoub' })
   })
 
   it('handles form url encoded body', async () => {
     const body = new URLSearchParams()
     body.set('name', 'ayoub')
-    const { data } = await unfee(serverUrl(listener, '/post/form-urlencoded'), { data: body, method: 'post' })
+    const [error, data] = await unfee<Record<string, string>>(serverUrl(listener, '/post/form-urlencoded'), { data: body, method: 'post' })
+    expect(error).toBeNull()
     expect(data).toMatchObject({ name: 'ayoub' })
   })
 
   it('handles plain text body', async () => {
     const body = 'hello world'
-    const { data } = await unfee(serverUrl(listener, '/post/plain-text'), { data: body, method: 'post' })
+    const [error, data] = await unfee<string>(serverUrl(listener, '/post/plain-text'), { data: body, method: 'post' })
+    expect(error).toBeNull()
     expect(data).toBe(body)
   })
 
   it('handles form data response', async () => {
-    const { data } = await unfee<FormData>(serverUrl(listener, '/form-data-response'), { responseType: 'formdata' })
+    const [error, data] = await unfee<FormData>(serverUrl(listener, '/form-data-response'), { responseType: 'formdata' })
+    expect(error).toBeNull()
     expect(data).toBeInstanceOf(FormData)
-    expect(data.get('name')).toEqual('ayoub')
+    expect(data!.get('name')).toEqual('ayoub')
   })
 
   it('handles array buffer response', async () => {
-    const { data } = await unfee<ArrayBuffer>(serverUrl(listener, '/array-buffer-response'), { responseType: 'arraybuffer' })
+    const [error, data] = await unfee<ArrayBuffer>(serverUrl(listener, '/array-buffer-response'), { responseType: 'arraybuffer' })
+    expect(error).toBeNull()
     expect(data).toBeInstanceOf(ArrayBuffer)
-    expect(new Uint8Array(data)).toEqual(new Uint8Array([1, 2, 3]))
+    expect(new Uint8Array(data!)).toEqual(new Uint8Array([1, 2, 3]))
   })
 
   it('handles blob response', async () => {
-    const { data } = await unfee<Blob>(serverUrl(listener, '/blob-response'), { responseType: 'blob' })
+    const [error, data] = await unfee<Blob>(serverUrl(listener, '/blob-response'), { responseType: 'blob' })
+    expect(error).toBeNull()
     expect(data).toBeInstanceOf(Blob)
-    expect(await data.text()).toEqual('HI!')
+    expect(await data!.text()).toEqual('HI!')
   })
 
   it('auto detects form data response', async () => {
-    const { data } = await unfee<FormData>(serverUrl(listener, '/form-data-response'))
+    const [error, data] = await unfee<FormData>(serverUrl(listener, '/form-data-response'))
+    expect(error).toBeNull()
     expect(data).toBeInstanceOf(FormData)
-    expect(data.get('name')).toEqual('ayoub')
+    expect(data!.get('name')).toEqual('ayoub')
   })
 
   it('auto detects array buffer response', async () => {
-    const { data } = await unfee<ArrayBuffer>(serverUrl(listener, '/array-buffer-response'))
+    const [error, data] = await unfee<ArrayBuffer>(serverUrl(listener, '/array-buffer-response'))
+    expect(error).toBeNull()
     expect(data).toBeInstanceOf(ArrayBuffer)
-    expect(new Uint8Array(data)).toEqual(new Uint8Array([1, 2, 3]))
+    expect(new Uint8Array(data!)).toEqual(new Uint8Array([1, 2, 3]))
   })
 
   it('auto detects blob response', async () => {
-    const { data } = await unfee<Blob>(serverUrl(listener, '/blob-response'))
+    const [error, data] = await unfee<Blob>(serverUrl(listener, '/blob-response'))
+    expect(error).toBeNull()
     expect(data).toBeInstanceOf(Blob)
-    expect(await data.text()).toEqual('HI!')
+    expect(await data!.text()).toEqual('HI!')
   })
 
   it('handles bad response', async () => {
-    try {
-      await unfee(serverUrl(listener, '/403'))
-    }
-    catch (error) {
-      expect(error).instanceOf(HTTPError)
-    }
+    const [error] = await unfee(serverUrl(listener, '/403'))
+    expect(error).toBeInstanceOf(HTTPError)
   })
 
   it('throws parser error', async () => {
-    try {
-      await unfee(serverUrl(listener, '/parse-error'))
-    }
-    catch (error) {
-      expect(error).instanceOf(ParseError)
-    }
+    const [error] = await unfee(serverUrl(listener, '/parse-error'))
+    expect(error).toBeInstanceOf(ParseError)
   })
 
   it('can be aborted', async () => {
     const controller = new AbortController()
-    try {
-      const res = unfee(serverUrl(listener, '/long'), { signal: controller.signal })
-      controller.abort()
-      await res
-    }
-    catch (error) {
-      expect(error).toBeInstanceOf(DOMException)
-      expect((error as DOMException).name).toBe('AbortError')
-    }
+    const res = unfee(serverUrl(listener, '/long'), { signal: controller.signal })
+    controller.abort()
+    const [error] = await res
+    expect(error).toBeInstanceOf(DOMException)
+    expect((error as DOMException).name).toBe('AbortError')
   })
 
   it('times out', async () => {
-    try {
-      await unfee(serverUrl(listener, '/long'), { timeout: 100 })
-    }
-    catch (error) {
-      expect(error).toBeInstanceOf(DOMException)
-      expect((error as DOMException).name).toBe('AbortError')
-    }
+    const [error] = await unfee(serverUrl(listener, '/long'), { timeout: 100 })
+    expect(error).toBeInstanceOf(DOMException)
+    expect((error as DOMException).name).toBe('AbortError')
   })
 
   it('reties requests by default', async () => {
@@ -229,11 +211,7 @@ describe('unfee', () => {
 
     const spy = vi.spyOn(hooks, 'onRequestRetry')
 
-    try {
-      await unfee(serverUrl(listener, '/500'), { hooks })
-    }
-    catch {
-    }
+    await unfee(serverUrl(listener, '/500'), { hooks })
 
     expect(spy).toHaveBeenCalledOnce()
   })
@@ -243,17 +221,13 @@ describe('unfee', () => {
 
     const spy = vi.spyOn(hooks, 'onRequestRetry')
 
-    try {
-      await unfee(serverUrl(listener, '/500'), {
-        hooks,
-        retry: {
-          times: 5,
-          statusCode: new Set([500]),
-        },
-      })
-    }
-    catch {
-    }
+    await unfee(serverUrl(listener, '/500'), {
+      hooks,
+      retry: {
+        times: 5,
+        statusCode: new Set([500]),
+      },
+    })
 
     expect(spy).toHaveBeenCalledTimes(5)
   })

@@ -57,13 +57,13 @@ function createContext(input: Input, options: FetchOptions, extendOption: Extend
   }
 }
 
-async function createFetchResponse<T>(response: Response, request: Request, ctx: Context): Promise<FetchResponse<T>> {
+async function createFetchResponse<T>(response: Response, request: Request, ctx: Context): Promise<T> {
   ctx.hooks.afterResponse[0]?.(request, response, ctx.options)
   ctx.hooks.afterResponse[1]?.(request, response, ctx.options)
 
   const contentType = ctx.responseType ?? detectResponseType(response.headers.get('content-type') ?? 'application/json')
 
-  let data
+  let data: T
   try {
     if (contentType === ResponseType.json) {
       data = await response.json() as T
@@ -85,27 +85,20 @@ async function createFetchResponse<T>(response: Response, request: Request, ctx:
     throw new ParseError(response, request, ctx.options, error)
   }
 
-  const result = {
-    data: data!,
-    status: response.status,
-    headers: response.headers,
-    statusText: response.statusText,
-  }
-
-  return result
+  return data
 }
 
-async function handleFetchError(response: Response, request: Request, ctx: Context, error: unknown, retryCount: number): Promise<never | undefined> {
+async function handleFetchError(response: Response | undefined, request: Request, ctx: Context, error: unknown, retryCount: number): Promise<never | undefined> {
   if (error instanceof ParseError) {
-    ctx.hooks.onResponseParseError[0]?.(error, response, request, ctx.options)
-    ctx.hooks.onResponseParseError[1]?.(error, response, request, ctx.options)
+    ctx.hooks.onResponseParseError[0]?.(error, response!, request, ctx.options)
+    ctx.hooks.onResponseParseError[1]?.(error, response!, request, ctx.options)
   }
   else if (error instanceof HTTPError) {
-    ctx.hooks.onResponseError[0]?.(error, response, request, ctx.options)
-    ctx.hooks.onResponseError[1]?.(error, response, request, ctx.options)
-    if (isIdempotentRequest(ctx.method) && ctx.retry.statusCode.has(response.status) && retryCount < ctx.retry.times) {
-      ctx.hooks.onRequestRetry[0]?.(retryCount, response, request, ctx.options)
-      ctx.hooks.onRequestRetry[1]?.(retryCount, response, request, ctx.options)
+    ctx.hooks.onResponseError[0]?.(error, response!, request, ctx.options)
+    ctx.hooks.onResponseError[1]?.(error, response!, request, ctx.options)
+    if (isIdempotentRequest(ctx.method) && ctx.retry.statusCode.has(response!.status) && retryCount < ctx.retry.times) {
+      ctx.hooks.onRequestRetry[0]?.(retryCount, response!, request, ctx.options)
+      ctx.hooks.onRequestRetry[1]?.(retryCount, response!, request, ctx.options)
       if (ctx.retry.delay > 0) {
         await new Promise(resolve => setTimeout(resolve, ctx.retry.delay))
       }
@@ -141,24 +134,29 @@ export function createFetch(extendOptions: ExtendOptions): Fetch {
       maxRetries = context!.retry.times
       const request = constructRequest(context)
 
-      let inflight: Response
+      let inflight: Response | undefined
       try {
         inflight = await fetch(request)
         if (!inflight.ok) {
           throw new HTTPError(inflight, request, context.options)
         }
 
-        return await createFetchResponse(inflight, request, context)
+        return [null, await createFetchResponse<T>(inflight, request, context), inflight]
       }
       catch (error) {
-        await handleFetchError(inflight!, request, context, error, retryCount)
+        try {
+          await handleFetchError(inflight, request, context, error, retryCount)
+        }
+        catch (error) {
+          return [error as Error, null, inflight ?? null]
+        }
       }
       finally {
         clearTimeout(timer)
       }
     }
 
-    // Defensive: make ts happy, this line should never be reached
+    // Defensive: make TS happy, this line should never be reached
     throw new Error('Failed to fetch after retries')
   }
 
