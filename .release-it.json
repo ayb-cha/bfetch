@@ -5,7 +5,7 @@
   "hooks": {
     "before:init": ["pnpm run lint", "pnpm run test"],
     "before:publish": "pnpm run build",
-    "after:bump": "pnpm dlx changelogen"
+    "after:bump": "pnpm dlx changelogen --outfile CHANGELOG.md"
   },
   "git": {
     "commitMessage": "chore: release ${version}",
