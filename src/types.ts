@@ -1,4 +1,5 @@
 import type { HTTPError } from '@/http-error.ts'
+import type { ParseError } from '@/parse-error.ts'
 
 export type Input = string | URL
 
@@ -7,12 +8,9 @@ export interface Fetch {
   extend: (options: ExtendOptions) => Fetch
 }
 
-export interface FetchResponse<T> {
-  headers: Headers
-  data: T
-  status: number
-  statusText: string
-}
+export type FetchResponse<T>
+  = | [error: null, data: T, response: Response | null]
+    | [error: HTTPError | ParseError | Error, data: null, response: Response | null]
 
 export interface ExtendOptions {
   baseUrl?: string
