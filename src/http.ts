@@ -26,5 +26,13 @@ export function detectResponseType(responseTypeHeader: string): ResponseType {
     return ResponseType.text
   }
 
-  return ResponseType.json
+  if (responseTypeHeader.includes('application/octet-stream')) {
+    return ResponseType.arraybuffer
+  }
+
+  if (responseTypeHeader.includes('multipart/form-data')) {
+    return ResponseType.formdata
+  }
+
+  return ResponseType.blob
 }

@@ -29,12 +29,20 @@ export async function createServer(): Promise<ReturnType<typeof serve>> {
     })
     .all('/array-buffer-response', () => {
       const data = new Uint8Array([1, 2, 3])
-      return new Response(data)
+      return new Response(data, {
+        headers: {
+          'Content-Type': 'application/octet-stream',
+        },
+      })
     })
 
     .all('/blob-response', () => {
       const data = new Blob(['HI!'])
-      return new Response(data)
+      return new Response(data, {
+        headers: {
+          'Content-Type': 'application/zip',
+        },
+      })
     })
 
   return serve(app, { port: 0, hostname: '127.0.0.1' }).ready()
