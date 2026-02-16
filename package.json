@@ -1,7 +1,7 @@
 {
   "name": "unfee",
   "type": "module",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "packageManager": "pnpm@10.20.0",
   "description": "Fetch API with sensible defaults",
   "license": "MIT",
