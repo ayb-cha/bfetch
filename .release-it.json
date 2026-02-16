@@ -3,8 +3,7 @@
     "release-it-pnpm": {}
   },
   "hooks": {
-    "before:init": ["pnpm run lint", "pnpm run test"],
-    "before:npm:release": "pnpm run build"
+    "before:init": ["pnpm run lint", "pnpm run test", "pnpm run build"]
   },
   "git": {
     "commitMessage": "chore: release ${version}",
