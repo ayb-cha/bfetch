@@ -21,7 +21,7 @@ Usage:
 ```ts
 import { unfee } from 'unfee'
 
-const [error, data] = await unfee<{ id: string }>('https://jsonplaceholder.typicode.com/todos/1')
+const [error, data] = await unfee<{ id: string }>('/todos/1')
 if (error) {
   console.error(error)
   return
@@ -38,6 +38,20 @@ console.log(data.id)
 - Instances with custom defaults
 - Hooks
 - TypeScript niceties
+
+## Response Parsing
+
+The response body is automatically detected and parsed based on the Content-Type header. You can optionally enforce a specific type using the `responseType` option.
+
+**Example:**
+
+```js
+const [_, buffer] = await unfee('/array-buffer-response', {
+  responseType: 'arraybuffer'
+})
+```
+
+Supported response types: text, json, formdata, arraybuffer, blob.
 
 ## JSON
 
